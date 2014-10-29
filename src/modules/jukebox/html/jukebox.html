@@ -1,0 +1,47 @@
+<div ng-app="jukebox">
+
+    <form ng-controller="FormController" ng-submit="submit()">
+        <div class="title-date">I'll be in Holiday in SalzbugerLand</div>
+        <div class="selection-date">
+            Arriving:
+            <span class="input-arriving"><input type="date" ng-model="from" required placeholder="yyyy-MM-dd"/></span>
+            Departing:
+            <span class="input-departing"> <input type="date" ng-model="to" required placeholder="yyyy-MM-dd"/></span>
+
+            <div class="date">
+                <div class="data-1">
+                    <div ng-bind="from"></div>
+                </div>
+                <div class="data-2">
+                    <div ng-bind="to"></div>
+                </div>
+            </div>
+
+        </div>
+
+
+        <div class="title-ceck">I am interested in</div>
+        <div class="form__themes">
+            <div class="form__themes__theme" ng-repeat="theme in holidayThemes">
+                <span class="category"><input type="checkbox" ng-model="theme.enabled"/> {{theme.label}}</span>
+            </div>
+        </div>
+
+        <div id="recap">
+            <div ng-repeat="theme in holidayThemes | filter:{enabled:true}">
+                <span class="list-category">{{theme.label}}: {{theme.enabled}}</span><br/>
+            </div>
+        </div>
+
+
+        <input type="submit" id="submit" value="Submit"/>
+
+        <div class="title-results">Results</div>
+
+        <div class="events">
+            <sl-event ng-repeat="event in events" value="event" ng-show="isEventVisible(event)"></sl-event>
+        </div>
+
+    </form>
+
+</div>
