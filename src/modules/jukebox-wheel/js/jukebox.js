@@ -7,6 +7,72 @@ jQuery(function ($) {
         e.preventDefault();
     });
 
+
+    var hammerize = function (selector, rotationStep, center, width, height, hookTap) {
+
+        var rotation = 0;
+
+        /**
+         * Raise an event when the wheel has been tapped.
+         *
+         * @since 1.0.0
+         *
+         * @param {*} value The selected value.
+         */
+        function updateInput(value) {
+            $(document).trigger('centerWheelPress', value);
+        }
+
+        // Init touch controls
+        var wheelTouch = Hammer($(selector)[0]);
+        wheelTouch.get('pan')
+            .set({direction: Hammer.DIRECTION_ALL});
+
+        // Tap and Rotation controls
+        if (hookTap)
+            wheelTouch.on('tap', function (el) {
+
+                var selectedValue = d3.select(el.target).data()[0];
+
+                if (selectedValue !== undefined) {
+                    // Tap on sector
+                    updateInput(selectedValue);
+                } else {
+                    // Tap on center
+                    var elementId = $(el.target).attr('id');
+                    if (elementId.indexOf('ok-button') > -1) {
+                        // Which input was chosen?
+                        var selectedIndex = jukebox.getSectorIndexFromRotation(rotation, data.length);
+                        updateInput(data[selectedIndex]);
+                    }
+                }
+            });
+
+        wheelTouch.on('pan swipe', function (e) {
+            // Average velocities
+            var velocity = 0.5 * (Math.abs(e.velocityX) + Math.abs(e.velocityY));
+
+            // Change sign to velocity if rotation is counter-clockwise
+            var quadrant = jukebox.getEventQuadrant(selector, e);
+            velocity = velocity * jukebox.rotationSignRespectingQuadrantAndMovement(quadrant, e.velocityX, e.velocityY);
+
+            // Trigger events (only meaningful ones)
+            if (jukebox.thereWasASectorSwitch(rotation, rotationStep * velocity, data.length)) {
+                if (velocity < 0) {
+                    $(document).trigger('rotateAntiClockwise');
+                } else {
+                    $(document).trigger('rotateClockwise');
+                }
+            }
+
+            // Update rotation
+            rotation += rotationStep * velocity;
+
+            // Rotate wheel
+            center.attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ') rotate(' + rotation + ')');
+        });
+    };
+
     /**
      * Create the wheel.
      *
@@ -14,7 +80,7 @@ jQuery(function ($) {
      *
      * @param {string} selector The element selector.
      */
-    function buildWheel(selector) {
+    function buildWheel(selector, hookTap) {
 
         // Clear div contents
         $(selector).empty();
@@ -33,7 +99,6 @@ jQuery(function ($) {
         var outerRadius = width * scalingFactor;
         var interval = 0.05;
         var sectorAngle = Math.PI * 2 / data.length;
-        var rotation = 0;
         var rotationStep = 10;
 
         var wheel = d3.select(selector);
@@ -73,7 +138,7 @@ jQuery(function ($) {
             .append('text')
             .attr('class', 'sector-text')
             .attr('transform', function (d, i) {
-                info = getLabelsXYAngle(i);
+                var info = getLabelsXYAngle(i);
                 return 'rotate(' + info.angle + ',' + info.cx + ',' + info.cy + ')';
             })
             .attr('x', function (d, i) {
@@ -113,52 +178,6 @@ jQuery(function ($) {
                 return 'Ok';
             });
 
-        // Init touch controls
-        var wheelTouch = Hammer($(selector)[0]);
-        wheelTouch.get('pan')
-            .set({direction: Hammer.DIRECTION_ALL});
-
-        // Tap and Rotation controls
-        wheelTouch.on('tap', function (el) {
-            selectedValue = d3.select(el.target).data()[0];
-
-            if (selectedValue !== undefined) {
-                // Tap on sector
-                updateInput(selectedValue);
-            } else {
-                // Tap on center
-                elementId = $(el.target).attr('id');
-                if (elementId.indexOf('ok-button') > -1) {
-                    // Which input was chosen?
-                    var selectedIndex = jukebox.getSectorIndexFromRotation(rotation, data.length);
-                    updateInput(data[selectedIndex]);
-                }
-            }
-        })
-            .on('pan swipe', function (e) {
-                // Average velocities
-                var velocity = 0.5 * (Math.abs(e.velocityX) + Math.abs(e.velocityY));
-
-                // Change sign to velocity if rotation is counter-clockwise
-                var quadrant = jukebox.getEventQuadrant(selector, e);
-                velocity = velocity * jukebox.rotationSignRespectingQuadrantAndMovement(quadrant, e.velocityX, e.velocityY);
-
-                // Trigger events (only meaningful ones)
-                if (jukebox.thereWasASectorSwitch(rotation, rotationStep * velocity, data.length)) {
-                    if (velocity < 0) {
-                        $(document).trigger('rotateAntiClockwise');
-                    } else {
-                        $(document).trigger('rotateClockwise');
-                    }
-                }
-
-                // Update rotation
-                rotation += rotationStep * velocity;
-
-                // Rotate wheel
-                center.attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ') rotate(' + rotation + ')');
-            });
-
         // Utility function to create labels
         function getLabelsXYAngle(i) {
             var labelXYA = {};
@@ -176,9 +195,7 @@ jQuery(function ($) {
             return labelXYA;
         }
 
-        function updateInput(value) {
-            $(document).trigger('centerWheelPress', value);
-        }
+        hammerize(selector, rotationStep, center, width, height, hookTap);
     }
 
     /////////////////////////////////////////
@@ -210,7 +227,7 @@ jQuery(function ($) {
     var data = dates;
 
     // Build wheel!
-    buildWheel('#wheel');
+    buildWheel('#wheel', true);
 
     // Tab switching events
     Hammer($('#select-interest-tab')[0]).on('tap', function () {
@@ -218,14 +235,14 @@ jQuery(function ($) {
         decidedFromDate = true;
         decidedToDate = true;
         updateInputFieldFocus();
-        buildWheel('#wheel');
+        buildWheel('#wheel', false);
     });
     Hammer($('#select-date-tab')[0]).on('tap', function () {
         data = dates;
         decidedFromDate = false;
         decidedToDate = false;
         updateInputFieldFocus();
-        buildWheel('#wheel');
+        buildWheel('#wheel', false);
     });
 
     Hammer($('#date-from-input')[0]).on('tap', function () {
@@ -267,24 +284,35 @@ jQuery(function ($) {
         }
         jukebox.syncFromToDates('#date-from-input', '#date-to-input', decidedFromDate);
     });
+
     // Main application logic events
     $(document).on('centerWheelPress', function (e, value) {
+
+        // console.log('centerWheelPress');
+
         if (!decidedFromDate) {
             decidedFromDate = true;
         }
         else if (!decidedToDate) {
             decidedToDate = true;
             data = interests;
-            buildWheel('#wheel');
+            buildWheel('#wheel', false);
             $('a[href="#select-interest"]').tab('show');
         } else {
 
             // Update interests list
-            var chosenInterests = $('#interest-input').val();
-            chosenInterests += value + ',';
-            chosenInterests = jukebox.deleteDuplicates(chosenInterests.split(','));
-            chosenInterests = chosenInterests.join(',');
-            $('#interest-input').val(chosenInterests);
+            var inputValue = $('#interest-input').val();
+            var chosenInterests = ( '' !== inputValue ? inputValue.split(',') : [] );
+
+            // Remove or add the interest.
+            var index = $.inArray(value, chosenInterests);
+            index > -1 ? chosenInterests.splice(index, 1) : chosenInterests.push(value);
+
+            //var chosenInterests = $('#interest-input').val();
+            //chosenInterests += value + ',';
+            //chosenInterests = jukebox.deleteDuplicates(chosenInterests.split(','));
+            //chosenInterests = chosenInterests.join(',');
+            $('#interest-input').val(chosenInterests.join(','));
 
             // Activate submission
             $('#wheel-submit').prop('disabled', false);
