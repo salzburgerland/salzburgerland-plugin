@@ -130,7 +130,7 @@ jQuery(function ($) {
                 elementId = $(el.target).attr('id');
                 if (elementId.indexOf('ok-button') > -1) {
                     // Which input was chosen?
-                    var selectedIndex = getSectorIndexFromRotation(rotation, data.length);
+                    var selectedIndex = jukebox.getSectorIndexFromRotation(rotation, data.length);
                     updateInput(data[selectedIndex]);
                 }
             }
@@ -140,11 +140,11 @@ jQuery(function ($) {
                 var velocity = 0.5 * (Math.abs(e.velocityX) + Math.abs(e.velocityY));
 
                 // Change sign to velocity if rotation is counter-clockwise
-                var quadrant = getEventQuadrant(selector, e);
-                velocity = velocity * rotationSignRespectingQuadrantAndMovement(quadrant, e.velocityX, e.velocityY);
+                var quadrant = jukebox.getEventQuadrant(selector, e);
+                velocity = velocity * jukebox.rotationSignRespectingQuadrantAndMovement(quadrant, e.velocityX, e.velocityY);
 
                 // Trigger events (only meaningful ones)
-                if (thereWasASectorSwitch(rotation, rotationStep * velocity, data.length)) {
+                if (jukebox.thereWasASectorSwitch(rotation, rotationStep * velocity, data.length)) {
                     if (velocity < 0) {
                         $(document).trigger('rotateAntiClockwise');
                     } else {
@@ -183,14 +183,16 @@ jQuery(function ($) {
 
     /////////////////////////////////////////
     // Execution starts here
+    var jukebox = new szJukebox();
+
 
     // Prepare forms
     var date = new Date();
-    date = convertUnixDateToNormal(date.getTime());
+    date = jukebox.convertUnixDateToNormal(date.getTime());
     $('#date-from-input').val(date);
     $('#date-to-input').val(date);
     // Add two days
-    changeDay('#date-to-input', 2);
+    jukebox.changeDay('#date-to-input', 2);
 
     $('#wheel-submit').prop('disabled', true);
 
@@ -241,9 +243,9 @@ jQuery(function ($) {
     // Final submission
     Hammer($('#wheel-submit')[0]).on('tap', function () {
         var fromDate = $('#date-from-input').val();
-        fromDate = [fromDate, convertNormalDateToUnix(fromDate)];
+        fromDate = [fromDate, jukebox.convertNormalDateToUnix(fromDate)];
         var toDate = $('#date-to-input').val();
-        toDate = [toDate, convertNormalDateToUnix(toDate)];
+        toDate = [toDate, jukebox.convertNormalDateToUnix(toDate)];
         var interestsList = ($('#interest-input').val()).split(',');
         alert(fromDate + '\n' + toDate + '\n' + interestsList);
     });
@@ -251,19 +253,19 @@ jQuery(function ($) {
     // Events fired by the wheel
     $(document).on('rotateAntiClockwise', function () {
         if (!decidedFromDate) {
-            changeDay('#date-from-input', -1);
+            jukebox.changeDay('#date-from-input', -1);
         } else if (!decidedToDate) {
-            changeDay('#date-to-input', -1);
+            jukebox.changeDay('#date-to-input', -1);
         }
-        syncFromToDates('#date-from-input', '#date-to-input', decidedFromDate);
+        jukebox.syncFromToDates('#date-from-input', '#date-to-input', decidedFromDate);
     });
     $(document).on('rotateClockwise', function () {
         if (!decidedFromDate) {
-            changeDay('#date-from-input', 1);
+            jukebox.changeDay('#date-from-input', 1);
         } else if (!decidedToDate) {
-            changeDay('#date-to-input', 1);
+            jukebox.changeDay('#date-to-input', 1);
         }
-        syncFromToDates('#date-from-input', '#date-to-input', decidedFromDate);
+        jukebox.syncFromToDates('#date-from-input', '#date-to-input', decidedFromDate);
     });
     // Main application logic events
     $(document).on('centerWheelPress', function (e, value) {
@@ -280,7 +282,7 @@ jQuery(function ($) {
             // Update interests list
             var chosenInterests = $('#interest-input').val();
             chosenInterests += value + ',';
-            chosenInterests = deleteDuplicates(chosenInterests.split(','));
+            chosenInterests = jukebox.deleteDuplicates(chosenInterests.split(','));
             chosenInterests = chosenInterests.join(',');
             $('#interest-input').val(chosenInterests);
 
