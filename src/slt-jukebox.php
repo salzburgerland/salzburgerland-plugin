@@ -1,3 +1,4 @@
+
 <?php
 /**
  * Plugin Name: Salzburgerland Tourismus Jukebox
@@ -17,3 +18,6 @@ require_once( 'admin/saju_admin.php' );
 
 // Load the Jukebox module.
 require_once( 'modules/jukebox/saju_jukebox.php' );
+
+// Load shortcodes
+require_once( 'shortcodes/jukebox-wheel/saju_shortcode_jukebox_wheel.php' );
