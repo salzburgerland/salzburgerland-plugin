@@ -1,15 +1,19 @@
-$ = jQuery;
-$(document).ready(function() {
+jQuery(function ($) {
 
-    // Disable page bouncing
-    $(document).bind(
-        'touchmove',
-        function(e) {
-            e.preventDefault();
-        }
-    );
+    /**
+     * Disable screen bouncing.
+     */
+    $(document).bind('touchmove', function (e) {
+        e.preventDefault();
+    });
 
-    // Buold wheel and rotation controls
+    /**
+     * Create the wheel.
+     *
+     * @since 1.0.0
+     *
+     * @param {string} selector The element selector.
+     */
     function buildWheel(selector) {
 
         // Clear div contents
@@ -17,7 +21,7 @@ $(document).ready(function() {
 
         // Expand svg to parent width and to be a square
         $(selector).width('100%');
-        $(selector).height( $(selector).width() );
+        $(selector).height($(selector).width());
 
         // Get size in pixel
         var width = $(selector).width();
@@ -38,10 +42,10 @@ $(document).ready(function() {
         var arc = d3.svg.arc()
             .innerRadius(innerRadius)
             .outerRadius(outerRadius)
-            .startAngle(function(d, i) {
+            .startAngle(function (d, i) {
                 return sectorAngle * i;
             })
-            .endAngle(function(d, i) {
+            .endAngle(function (d, i) {
                 return (sectorAngle * (i + 1)) - interval;
             });
 
@@ -60,7 +64,7 @@ $(document).ready(function() {
             .append('path')
             .attr('d', arc)
             .attr('class', 'sector-button')
-            .style('fill', function() {
+            .style('fill', function () {
                 return "hsl(" + Math.random() * 360 + ",100%,50%)";
             });
 
@@ -68,24 +72,24 @@ $(document).ready(function() {
         center.selectAll('g')
             .append('text')
             .attr('class', 'sector-text')
-            .attr('transform', function(d, i) {
+            .attr('transform', function (d, i) {
                 info = getLabelsXYAngle(i);
                 return 'rotate(' + info.angle + ',' + info.cx + ',' + info.cy + ')';
             })
-            .attr('x', function(d, i) {
+            .attr('x', function (d, i) {
                 return getLabelsXYAngle(i).cx;
             })
-            .attr('dy', function(d, i) {
+            .attr('dy', function (d, i) {
                 return getLabelsXYAngle(i).cy;
             })
-            .html(function(d) {
+            .html(function (d) {
                 return d;
             });
 
         // Add triangle to indicate current selection
         wheel.append('polygon')
             .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
-            .attr('points', function() {
+            .attr('points', function () {
                 var width = innerRadius / 2;
                 var height = innerRadius * 1.2;
                 return -width / 2 + ',' + '0 0' + -height + ', ' + width / 2 + ',0';
@@ -105,17 +109,17 @@ $(document).ready(function() {
             .attr('id', 'ok-button-text')
             .attr('x', -10)
             .attr('dy', 0)
-            .html(function(d) {
+            .html(function (d) {
                 return 'Ok';
             });
 
         // Init touch controls
         var wheelTouch = Hammer($(selector)[0]);
         wheelTouch.get('pan')
-                .set({direction: Hammer.DIRECTION_ALL});
+            .set({direction: Hammer.DIRECTION_ALL});
 
         // Tap and Rotation controls
-        wheelTouch.on('tap', function(el) {
+        wheelTouch.on('tap', function (el) {
             selectedValue = d3.select(el.target).data()[0];
 
             if (selectedValue !== undefined) {
@@ -131,29 +135,29 @@ $(document).ready(function() {
                 }
             }
         })
-        .on('pan swipe', function(e) {
-            // Average velocities
-            var velocity = 0.5 * (Math.abs(e.velocityX) + Math.abs(e.velocityY));
+            .on('pan swipe', function (e) {
+                // Average velocities
+                var velocity = 0.5 * (Math.abs(e.velocityX) + Math.abs(e.velocityY));
 
-            // Change sign to velocity if rotation is counter-clockwise
-            var quadrant = getEventQuadrant(selector, e);
-            velocity = velocity * rotationSignRespectingQuadrantAndMovement(quadrant, e.velocityX, e.velocityY);
+                // Change sign to velocity if rotation is counter-clockwise
+                var quadrant = getEventQuadrant(selector, e);
+                velocity = velocity * rotationSignRespectingQuadrantAndMovement(quadrant, e.velocityX, e.velocityY);
 
-            // Trigger events (only meaningful ones)
-            if (thereWasASectorSwitch(rotation, rotationStep * velocity, data.length)) {
-                if (velocity < 0) {
-                    $(document).trigger('rotateAntiClockwise');
-                } else {
-                    $(document).trigger('rotateClockwise');
+                // Trigger events (only meaningful ones)
+                if (thereWasASectorSwitch(rotation, rotationStep * velocity, data.length)) {
+                    if (velocity < 0) {
+                        $(document).trigger('rotateAntiClockwise');
+                    } else {
+                        $(document).trigger('rotateClockwise');
+                    }
                 }
-            }
 
-            // Update rotation
-            rotation += rotationStep * velocity;
+                // Update rotation
+                rotation += rotationStep * velocity;
 
-            // Rotate wheel
-            center.attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ') rotate(' + rotation + ')');
-        });
+                // Rotate wheel
+                center.attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ') rotate(' + rotation + ')');
+            });
 
         // Utility function to create labels
         function getLabelsXYAngle(i) {
@@ -185,11 +189,11 @@ $(document).ready(function() {
     date = convertUnixDateToNormal(date.getTime());
     $('#date-from-input').val(date);
     $('#date-to-input').val(date);
-    // Add two days 
+    // Add two days
     changeDay('#date-to-input', 2);
-    
+
     $('#wheel-submit').prop('disabled', true);
-    
+
     // App logic variables
     var decidedFromDate = false;
     var decidedToDate = false;
@@ -202,19 +206,19 @@ $(document).ready(function() {
         dates.push('');
     }
     var data = dates;
-    
+
     // Build wheel!
     buildWheel('#wheel');
 
     // Tab switching events
-    Hammer($('#select-interest-tab')[0]).on('tap', function() {
+    Hammer($('#select-interest-tab')[0]).on('tap', function () {
         data = interests;
         decidedFromDate = true;
         decidedToDate = true;
         updateInputFieldFocus();
         buildWheel('#wheel');
     });
-    Hammer($('#select-date-tab')[0]).on('tap', function() {
+    Hammer($('#select-date-tab')[0]).on('tap', function () {
         data = dates;
         decidedFromDate = false;
         decidedToDate = false;
@@ -222,30 +226,30 @@ $(document).ready(function() {
         buildWheel('#wheel');
     });
 
-    Hammer($('#date-from-input')[0]).on('tap', function() {
+    Hammer($('#date-from-input')[0]).on('tap', function () {
         decidedFromDate = false;
         decidedToDate = false;
         updateInputFieldFocus();
     });
-    
-    Hammer($('#date-to-input')[0]).on('tap', function() {
+
+    Hammer($('#date-to-input')[0]).on('tap', function () {
         decidedFromDate = true;
         decidedToDate = false;
         updateInputFieldFocus();
     });
-    
+
     // Final submission
-    Hammer($('#wheel-submit')[0]).on('tap', function() {
+    Hammer($('#wheel-submit')[0]).on('tap', function () {
         var fromDate = $('#date-from-input').val();
-        fromDate = [ fromDate, convertNormalDateToUnix(fromDate) ];
+        fromDate = [fromDate, convertNormalDateToUnix(fromDate)];
         var toDate = $('#date-to-input').val();
-        toDate = [ toDate, convertNormalDateToUnix(toDate) ];
+        toDate = [toDate, convertNormalDateToUnix(toDate)];
         var interestsList = ($('#interest-input').val()).split(',');
         alert(fromDate + '\n' + toDate + '\n' + interestsList);
     });
 
     // Events fired by the wheel
-    $(document).on('rotateAntiClockwise', function() {
+    $(document).on('rotateAntiClockwise', function () {
         if (!decidedFromDate) {
             changeDay('#date-from-input', -1);
         } else if (!decidedToDate) {
@@ -253,7 +257,7 @@ $(document).ready(function() {
         }
         syncFromToDates('#date-from-input', '#date-to-input', decidedFromDate);
     });
-    $(document).on('rotateClockwise', function() {
+    $(document).on('rotateClockwise', function () {
         if (!decidedFromDate) {
             changeDay('#date-from-input', 1);
         } else if (!decidedToDate) {
@@ -262,7 +266,7 @@ $(document).ready(function() {
         syncFromToDates('#date-from-input', '#date-to-input', decidedFromDate);
     });
     // Main application logic events
-    $(document).on('centerWheelPress', function(e, value) {
+    $(document).on('centerWheelPress', function (e, value) {
         if (!decidedFromDate) {
             decidedFromDate = true;
         }
@@ -272,32 +276,33 @@ $(document).ready(function() {
             buildWheel('#wheel');
             $('a[href="#select-interest"]').tab('show');
         } else {
-            
+
             // Update interests list
             var chosenInterests = $('#interest-input').val();
             chosenInterests += value + ',';
             chosenInterests = deleteDuplicates(chosenInterests.split(','));
             chosenInterests = chosenInterests.join(',');
             $('#interest-input').val(chosenInterests);
-            
+
             // Activate submission
             $('#wheel-submit').prop('disabled', false);
             $('#wheel-submit').text('SUBMIT');
         }
         updateInputFieldFocus();
     });
-    
-    function updateInputFieldFocus(){
+
+    function updateInputFieldFocus() {
         $('#date-from-input').css('font-weight', 'normal');
         $('#date-to-input').css('font-weight', 'normal');
         $('#interest-input').css('font-weight', 'normal');
-        
-        if(!decidedFromDate){
+
+        if (!decidedFromDate) {
             $('#date-from-input').css('font-weight', 'bold');
-        } else if(!decidedToDate) {
+        } else if (!decidedToDate) {
             $('#date-to-input').css('font-weight', 'bold');
         } else {
             $('#interest-input').css('font-weight', 'bold');
         }
     }
+
 });
