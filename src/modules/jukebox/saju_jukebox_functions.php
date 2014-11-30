@@ -138,6 +138,21 @@ function saju_jukebox_admin_menu_callback() {
 }
 
 /**
+ * Enqueue the scripts and stylesheets.
+ *
+ * @since 1.0.0
+ */
+function saju_jukebox_enqueue_scripts() {
+
+	wp_enqueue_style( 'saju-css', plugins_url( 'css/jukebox.css', __FILE__ ) );
+	wp_enqueue_script( 'angular-js', '//ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js', array(), '1.2.26' );
+
+	// Load the Salzburgerland Jukebox javascript along with the configuration options.
+	wp_enqueue_script( 'saju-js', plugins_url( 'js/jukebox.js', __FILE__ ), array( 'angular-js' ) );
+
+}
+
+/**
  * Handle the *jukebox* shortcode.
  *
  * @since 1.0.0
@@ -148,17 +163,12 @@ function saju_jukebox_admin_menu_callback() {
  */
 function saju_jukebox_shortcode_jukebox( $atts ) {
 
-	wp_enqueue_style( 'saju-css', plugins_url( 'modules/jukebox/css/jukebox.css', __FILE__ ) );
-	wp_enqueue_script( 'angular-js', '//ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js', array(), '1.2.26' );
-
-	// Load the Salzburgerland Jukebox javascript along with the configuration options.
-	wp_enqueue_script( 'saju-js', plugins_url( 'modules/jukebox/js/jukebox.js', __FILE__ ), array( 'angular-js' ) );
-	// TODO: the following parameters should come from somewhere.
+	saju_jukebox_enqueue_scripts();
 
 	wp_localize_script( 'saju-js', 'saju_js_options', array(
 		'api_url'     => admin_url( 'admin-ajax.php?action=wl_sparql&slug=' ),
-		'event_url'   => get_option( SAJU_JUKEBOX_SETTINGS_FIELD_EVENT_URL),
-		'dataset_url' => get_option( SAJU_JUKEBOX_SETTINGS_FIELD_DATASET_URL)
+		'event_url'   => get_option( SAJU_JUKEBOX_SETTINGS_FIELD_EVENT_URL ),
+		'dataset_url' => get_option( SAJU_JUKEBOX_SETTINGS_FIELD_DATASET_URL )
 	) );
 
 	// Get the HTML fragment from the file.
@@ -168,3 +178,60 @@ function saju_jukebox_shortcode_jukebox( $atts ) {
 
 add_shortcode( 'slt_jukebox', 'saju_jukebox_shortcode_jukebox' );
 
+/**
+ * Outputs the client app that finds events based on the input parameters.
+ *
+ * @since 1.0.0
+ *
+ * @param array $atts The shortcode attributes.
+ *
+ * @return string The shortcode output.
+ */
+function saju_jukebox_shortcode_jukebox_results( $atts ) {
+
+	// Get the input parameters from the query string: the from/to dates and the interests list.
+	$from      = $_GET['from'];
+	$to        = $_GET['to'];
+	$interests = explode( ',', $_GET['interests'] );
+
+	saju_jukebox_enqueue_scripts();
+
+	wp_localize_script( 'saju-js', 'saju_js_options', array(
+		'api_url'     => admin_url( 'admin-ajax.php?action=wl_sparql&slug=' ),
+		'event_url'   => get_option( SAJU_JUKEBOX_SETTINGS_FIELD_EVENT_URL ),
+		'dataset_url' => get_option( SAJU_JUKEBOX_SETTINGS_FIELD_DATASET_URL ),
+		'from'        => $from,
+		'to'          => $to,
+		'interests'   => array_map( function( $item ) {
+			return saju_jukebox_shortcode_category_label_to_slug( $item );
+		}, $interests )
+	) );
+
+
+	// Get the HTML fragment from the file.
+	return file_get_contents( dirname( __FILE__ ) . '/html/jukebox_results.html' );
+
+}
+
+add_shortcode( 'slt_jukebox_results', 'saju_jukebox_shortcode_jukebox_results' );
+
+
+/**
+ * Returns the URI of a Jukebox category given its label.
+ *
+ * @since 1.0.0
+ *
+ * @param string $label The category label.
+ *
+ * @return null|string The category URI or null if not found.
+ */
+function saju_jukebox_shortcode_category_label_to_slug( $label ) {
+
+	$labels = unserialize( SAJU_JUKEBOX_CATEGORIES_LABELS_TO_SLUGS );
+
+	if ( !isset( $labels[$label] ) )
+		return null;
+
+	return '<' . SAJU_JUKEBOX_DATASET_URL . 'jukebox/' . $labels[$label] . '>';
+
+}

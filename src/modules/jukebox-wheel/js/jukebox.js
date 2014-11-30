@@ -219,7 +219,7 @@ jQuery(function ($) {
     updateInputFieldFocus();
 
     // Wheel data
-    var interests = ['biking', 'nature', 'eating', 'climbing', 'snowing', 'dancing'];
+    var interests = ['Art & Culture', 'Attractions', 'Eat & Drink', 'Event', 'Family', 'Sport and Outdoor'];
     var dates = [];
     for (var i = 0; i < 20; i++) {
         dates.push('');
@@ -263,8 +263,18 @@ jQuery(function ($) {
         fromDate = [fromDate, jukebox.convertNormalDateToUnix(fromDate)];
         var toDate = $('#date-to-input').val();
         toDate = [toDate, jukebox.convertNormalDateToUnix(toDate)];
-        var interestsList = ($('#interest-input').val()).split(',');
-        alert(fromDate + '\n' + toDate + '\n' + interestsList);
+        //var interestsList = ($('#interest-input').val()).split(',');
+
+        // Build the redirect to link.
+        var redirectTo = saju_jukebox_wheel_options.search_slug +
+            ( -1 < saju_jukebox_wheel_options.search_slug.indexOf('?') ? '&' : '?') +
+            'from=' + encodeURIComponent( fromDate[0] ) +
+            '&to=' + encodeURIComponent( toDate[0] ) +
+            '&interests=' + encodeURIComponent( $('#interest-input').val() );
+
+        // Redirect the user to the search page.
+        window.location.replace( redirectTo );
+
     });
 
     // Events fired by the wheel
