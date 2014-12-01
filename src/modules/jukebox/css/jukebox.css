@@ -1,6 +1,13 @@
 @import url(http://fonts.googleapis.com/css?family=Roboto+Slab:400,700,300);
 
-body{font-family: 'Roboto Slab', serif;}
+body {
+    font-family: 'Roboto Slab', serif;
+}
+
+a {
+    cursor: pointer
+}
+
 #recap {
     clear: both;
 }
@@ -35,42 +42,141 @@ body{font-family: 'Roboto Slab', serif;}
     padding: 4px;
 }
 
-.events__event__dates {
-    position: absolute;
-    bottom: 0;
-    height: 10px;
-    padding: 5px;
-    font-size: 12px;
-    color: #777;
-    background: white;
-    opacity: 0.9;
-    width: 230px;
+/*.events__event__dates {*/
+/*position: absolute;*/
+/*bottom: 0;*/
+/*height: 10px;*/
+/*padding: 5px;*/
+/*font-size: 12px;*/
+/*color: #777;*/
+/*background: white;*/
+/*opacity: 0.9;*/
+/*width: 230px;*/
+/*}*/
+
+form.ng-scope {
+    width: 960px;
+    margin: auto;
 }
 
-form.ng-scope{width:960px; margin:auto;}
+form span.input-arriving input {
+    font-family: 'Roboto Slab', serif;
+    height: 30px;
+    margin-bottom: 10px;
+    width: 383px;
+    font-size: 15px;
+    color: #999;
+    margin-right: 4%
+}
 
-form span.input-arriving input {font-family: 'Roboto Slab', serif;height:30px; margin-bottom:10px; width:383px; font-size:15px; color:#999;margin-right:4%}
+form span.input-departing input {
+    font-family: 'Roboto Slab', serif;
+    height: 30px;
+    margin-bottom: 10px;
+    width: 369px;
+    font-size: 15px;
+    color: #999;
+}
 
-form span.input-departing input {font-family: 'Roboto Slab', serif;height:30px; margin-bottom:10px; width:369px; font-size:15px; color:#999;}
+span.category {
+    height: 30px
+}
 
-span.category{height:30px}
-div.form__themes__theme.ng-scope{height:30px}
-span.category input{}
+div.form__themes__theme.ng-scope {
+    height: 30px
+}
 
-.selection-date  {margin-top:30px;margin-bottom:30px}
+span.category input {
+}
 
-a.events__event {margin-lef:20px; margin-right:20px;}
+.selection-date {
+    margin-top: 30px;
+    margin-bottom: 30px
+}
 
-div.data-1 {float:left; background-color:#090; width:48%; padding-top:10px; padding-bottom:10px;color:#FFFFFF; margin-right:2%; text-align:center; margin-top:10px; font-size:20px}
-div.data-2 {float:left; background-color:#090; width:48%;  padding-top:10px; padding-bottom:10px; color:#FFFFFF; margin-left:2%; text-align:center;margin-top:10px;font-size:20px}
+a.events__event {
+    margin-lef: 20px;
+    margin-right: 20px;
+}
 
-input#submit{ clear:both; margin-top:10px; background-color:#090; border:1px solid; width:150px; font-family: 'Roboto Slab', serif; font-size:20px; color:#ffffff; height:35px;}
+div.data-1 {
+    float: left;
+    background-color: #090;
+    width: 48%;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    color: #FFFFFF;
+    margin-right: 2%;
+    text-align: center;
+    margin-top: 10px;
+    font-size: 20px
+}
 
-.title-date {margin-bottom:15px;  background-color:#f4f4f4; padding:5px 0 5px 5px; font-size:22px;}
+div.data-2 {
+    float: left;
+    background-color: #090;
+    width: 48%;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    color: #FFFFFF;
+    margin-left: 2%;
+    text-align: center;
+    margin-top: 10px;
+    font-size: 20px
+}
 
-.title-ceck{margin-bottom:15px;  background-color:#f4f4f4; padding:5px 0 5px 5px; font-size:22px;}
-.title-results{margin-bottom:15px; margin-top:15px;  background-color:#f4f4f4; padding:5px 0 5px 5px; font-size:22px;}
+input#submit {
+    clear: both;
+    margin-top: 10px;
+    background-color: #090;
+    border: 1px solid;
+    width: 150px;
+    font-family: 'Roboto Slab', serif;
+    font-size: 20px;
+    color: #ffffff;
+    height: 35px;
+}
 
-.date {height:50px; margin-bottom:10px;}
+.title-date {
+    margin-bottom: 15px;
+    background-color: #f4f4f4;
+    padding: 5px 0 5px 5px;
+    font-size: 22px;
+}
 
-.list-category { list-style-type:circle; padding-left:10px;}
+.title-ceck {
+    margin-bottom: 15px;
+    background-color: #f4f4f4;
+    padding: 5px 0 5px 5px;
+    font-size: 22px;
+}
+
+.title-results {
+    margin-bottom: 15px;
+    margin-top: 15px;
+    background-color: #f4f4f4;
+    padding: 5px 0 5px 5px;
+    font-size: 22px;
+}
+
+.date {
+    height: 50px;
+    margin-bottom: 10px;
+}
+
+.list-category {
+    list-style-type: circle;
+    padding-left: 10px;
+}
+
+.fullscreen__close {
+    position: absolute;
+    display: block;
+    cursor: pointer;
+    top: 0;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    background: violet;
+    z-index: 1000;
+}

@@ -5,6 +5,31 @@ angular.module('jukebox', [])
     .value('from', saju_js_options.from)
     .value('to', saju_js_options.to)
     .value('interests', saju_js_options.interests)
+/**
+ * A date filter that shows the date and the time component only if the time is not midnight.
+ *
+ * @since 1.0.0
+ *
+ * @param {string} input The input date (yyyy-MM-dd'T'HH:mm:ss+hh:mm format).
+ * @param {string} dateFormat The format to apply to the date component.
+ * @param {string} timeFormat The format to apply to the time component.
+ *
+ * @return The formatted date (and time) string.
+ */
+    .filter('dateString', [ function () {
+        return function (input, dateFormat, timeFormat) {
+
+            var date = moment(input);
+
+            // Check if the time component is different from midnight.
+            if ( null === input.match( /.+T00:00:00\+\d{2}:\d{2}/i ) ) {
+                return date.tz('Europe/Vienna').format(dateFormat + timeFormat);
+            }
+
+            return date.tz('Europe/Vienna').format(dateFormat);
+
+        }
+    }])
     .service('HolidayThemesService', ['apiUrl', '$http', function (apiUrl, $http) {
 
         var service = {};
@@ -67,11 +92,11 @@ angular.module('jukebox', [])
         service.listByJukebox = function (from, to, jukebox, offset, limit) {
 
             var url = apiUrl + 'jukebox-events&from={from}&to={to}&jukebox={jukebox}&offset={offset}&limit={limit}&format=json'
-                    .replace('{from}', encodeURIComponent( from ) )
-                    .replace('{to}', encodeURIComponent( to ) )
-                    .replace('{jukebox}', encodeURIComponent( jukebox ) )
-                    .replace('{offset}', encodeURIComponent( offset ) )
-                    .replace('{limit}', encodeURIComponent( limit ) );
+                    .replace('{from}', encodeURIComponent(from))
+                    .replace('{to}', encodeURIComponent(to))
+                    .replace('{jukebox}', encodeURIComponent(jukebox))
+                    .replace('{offset}', encodeURIComponent(offset))
+                    .replace('{limit}', encodeURIComponent(limit));
 
             return $http({method: 'GET', url: url});
 
@@ -126,9 +151,9 @@ angular.module('jukebox', [])
         return {
             restrict: 'E',
             scope: {value: '='},
-            template: '<a ng-href="{{getLink(value)}}" class="events__event" ng-style="getStyle(value)">' +
+            template: '<a ng-click="open(value)" --ng-href="{{getLink(value)}}" class="events__event" ng-style="getStyle(value)">' +
             '<div class="events__event__label" ng-bind="value.label"></div>' +
-            '<div class="events__event__dates"></div>' +
+            '<div class="events__event__dates" ng-bind="value.start | dateString:\'ddd D/MM/YYYY\':\' @ H:mm\'"></div>' +
             '</a>',
             link: function (scope, element, attrs) {
 
@@ -145,6 +170,28 @@ angular.module('jukebox', [])
                 scope.getStyle = function (item) {
                     if (undefined !== item.images && 0 < item.images.length)
                         return {'background-image': 'url("' + item.images[0].url + '")'};
+                };
+
+                scope.open = function(item) {
+
+                    var link = scope.getLink(item);
+                    var onclick = 'jQuery(\'body\').css(\'overflow\', \'auto\');jQuery(this).parent().remove();';
+
+                    $('body').css('overflow', 'hidden');
+
+                    var fullscreen = $('<div class="fullscreen"><div class="fullscreen__close" onclick="' + onclick + '"></div></div>')
+                        .css('position', 'absolute')
+                        .css('background', 'gray')
+                        .css('overflow', 'auto')
+                        .css('top', $('body').scrollTop() )
+                        .width( $('body').innerWidth() )
+                        .height( $('body').innerHeight() )
+                        .appendTo('body');
+
+                    var inner = $('<div></div>').appendTo(fullscreen)
+                        .load(link);
+
+
                 };
 
             }

@@ -23,7 +23,7 @@ function saju_plugins_url( $url, $path, $plugin ) {
 	$rel_path = substr( dirname( $plugin ), strlen( dirname( __FILE__ ) ) ) . '/' . $path;
 
 	// Set the URL to plugins URL in order to support the plugin being symbolic linked.
-	$plugin_url = plugins_url() . '/slt-jukebox/' . $rel_path;
+	$plugin_url = plugins_url() . '/slt-jukebox' . $rel_path;
 
 	// Enable this for debugging this function.
 	// saju_write_log( "[ rel path :: $rel_path ][ file :: " . __FILE__  . " ][ url :: $url ][ path :: $path ][ plugin :: $plugin ][ plugins url  :: $plugin_url ]" );

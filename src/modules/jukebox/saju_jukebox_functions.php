@@ -145,10 +145,16 @@ function saju_jukebox_admin_menu_callback() {
 function saju_jukebox_enqueue_scripts() {
 
 	wp_enqueue_style( 'saju-css', plugins_url( 'css/jukebox.css', __FILE__ ) );
+
+	wp_enqueue_script( 'moment-js', plugins_url( 'js/moment.min.js', __FILE__ ), array(), '2.8.4' );
+	wp_enqueue_script( 'moment-timezone-width-data-js', plugins_url( 'js/moment-timezone-with-data-2010-2020.min.js', __FILE__ ), array( 'moment-js' ), '0.2.5' );
 	wp_enqueue_script( 'angular-js', '//ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js', array(), '1.2.26' );
 
 	// Load the Salzburgerland Jukebox javascript along with the configuration options.
-	wp_enqueue_script( 'saju-js', plugins_url( 'js/jukebox.js', __FILE__ ), array( 'angular-js' ) );
+	wp_enqueue_script( 'saju-js', plugins_url( 'js/jukebox.js', __FILE__ ), array(
+		'angular-js',
+		'moment-timezone-width-data-js'
+	), '1.0.0' );
 
 }
 
@@ -202,7 +208,7 @@ function saju_jukebox_shortcode_jukebox_results( $atts ) {
 		'dataset_url' => get_option( SAJU_JUKEBOX_SETTINGS_FIELD_DATASET_URL ),
 		'from'        => $from,
 		'to'          => $to,
-		'interests'   => array_map( function( $item ) {
+		'interests'   => array_map( function ( $item ) {
 			return saju_jukebox_shortcode_category_label_to_slug( $item );
 		}, $interests )
 	) );
@@ -229,9 +235,10 @@ function saju_jukebox_shortcode_category_label_to_slug( $label ) {
 
 	$labels = unserialize( SAJU_JUKEBOX_CATEGORIES_LABELS_TO_SLUGS );
 
-	if ( !isset( $labels[$label] ) )
+	if ( ! isset( $labels[ $label ] ) ) {
 		return null;
+	}
 
-	return '<' . SAJU_JUKEBOX_DATASET_URL . 'jukebox/' . $labels[$label] . '>';
+	return '<' . SAJU_JUKEBOX_DATASET_URL . 'jukebox/' . $labels[ $label ] . '>';
 
 }

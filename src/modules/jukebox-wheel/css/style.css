@@ -1,5 +1,6 @@
 .wheel-container {
     width: 100%;
+    margin: auto auto;
 }
 
 #wheel-submit {

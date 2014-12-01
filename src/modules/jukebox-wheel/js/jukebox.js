@@ -1,14 +1,20 @@
 jQuery(function ($) {
 
+    var WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
     /**
-     * Disable screen bouncing.
+     * Hammerize the element with the specified selector.
+     *
+     * @since 1.0.0
+     *
+     * @param {string} selector
+     * @param rotationStep
+     * @param center
+     * @param {number} width
+     * @param {number} height
+     * @param {[]} slices The wheel slices.
      */
-    $(document).bind('touchmove', function (e) {
-        e.preventDefault();
-    });
-
-
-    var hammerize = function (selector, rotationStep, center, width, height, hookTap) {
+    var hammerize = function (selector, rotationStep, center, width, height, slices, wheel) {
 
         var rotation = 0;
 
@@ -29,24 +35,31 @@ jQuery(function ($) {
             .set({direction: Hammer.DIRECTION_ALL});
 
         // Tap and Rotation controls
-        if (hookTap)
-            wheelTouch.on('tap', function (el) {
+        wheelTouch.on('tap', function (el) {
 
-                var selectedValue = d3.select(el.target).data()[0];
+            // When the user taps on a slice, we can get the selected value.
+            var value = d3.select(el.target).data()[0];
 
-                if (selectedValue !== undefined) {
-                    // Tap on sector
-                    updateInput(selectedValue);
-                } else {
-                    // Tap on center
-                    var elementId = $(el.target).attr('id');
-                    if (elementId.indexOf('ok-button') > -1) {
-                        // Which input was chosen?
-                        var selectedIndex = jukebox.getSectorIndexFromRotation(rotation, data.length);
-                        updateInput(data[selectedIndex]);
-                    }
-                }
-            });
+            // If the user didn't tap on a slice, we need to get the selected value according to the wheel position.
+            if (undefined === value) {
+
+                // Check that the user pressed on the OK button, otherwise ignore.
+                var elementId = $(el.target).attr('id');
+                if (0 > elementId.indexOf('ok-button'))
+                    return;
+
+                // Get the selected input.
+                value = slices[jukebox.getSectorIndexFromRotation(rotation, slices.length)];
+            }
+
+            // Reverse the selection and set the opacity.
+            value.__selected = ! value.__selected;
+            wheel.selectAll('#' + value.__id).attr('fill-opacity', value.__selected ? 1.0 : 0.5);
+
+            // Finally call the update input.
+            updateInput(value);
+
+        });
 
         wheelTouch.on('pan swipe', function (e) {
             // Average velocities
@@ -57,7 +70,7 @@ jQuery(function ($) {
             velocity = velocity * jukebox.rotationSignRespectingQuadrantAndMovement(quadrant, e.velocityX, e.velocityY);
 
             // Trigger events (only meaningful ones)
-            if (jukebox.thereWasASectorSwitch(rotation, rotationStep * velocity, data.length)) {
+            if (jukebox.thereWasASectorSwitch(rotation, rotationStep * velocity, slices.length)) {
                 if (velocity < 0) {
                     $(document).trigger('rotateAntiClockwise');
                 } else {
@@ -79,15 +92,17 @@ jQuery(function ($) {
      * @since 1.0.0
      *
      * @param {string} selector The element selector.
+     * @param {[]} slices The slices.
+     * @param {number} wheelWidth The width/height of the wheel.
      */
-    function buildWheel(selector, hookTap) {
+    function buildWheel(selector, slices, wheelWidth) {
 
         // Clear div contents
         $(selector).empty();
 
         // Expand svg to parent width and to be a square
-        $(selector).width('100%');
-        $(selector).height($(selector).width());
+        $(selector).width(wheelWidth);
+        $(selector).height(wheelWidth);
 
         // Get size in pixel
         var width = $(selector).width();
@@ -98,20 +113,53 @@ jQuery(function ($) {
         var innerRadius = width * scalingFactor / 2;
         var outerRadius = width * scalingFactor;
         var interval = 0.05;
-        var sectorAngle = Math.PI * 2 / data.length;
+        var sectorAngle = Math.PI * 2 / slices.length;
         var rotationStep = 10;
 
         var wheel = d3.select(selector);
 
+        var defs = wheel.append('defs');
+
+        // Add the OK button image.
+        defs.append('pattern')
+            .attr('id', 'ok-button-pattern')
+            .attr('patternUnits', 'userSpaceOnUse')
+            .attr('x', width / 2 - innerRadius)
+            .attr('y', height / 2 - innerRadius)
+            .attr('width', innerRadius * 2)
+            .attr('height', innerRadius * 2)
+            .append('image')
+            .attr('width', innerRadius * 2)
+            .attr('height', innerRadius * 2)
+            .attr('xlink:href', 'http://www.clker.com/cliparts/T/8/V/V/V/G/ok-button-hi.png');
+
+        // If the slices have an image, create their pattern here.
+        for (var i = 0; i < slices.length; i++) {
+            if (undefined === slices[i].image)
+                continue;
+
+            defs.append('pattern')
+                .attr('id', 'slice-' + i)
+                .attr('patternUnits', 'objectBoundingBox')
+                .attr('width', '100%')
+                .attr('height', '100%')
+                .attr('viewBox', '0 0 1 1')
+                .attr('preserveAspectRatio', 'xMidYMid slice')
+                .append('image')
+                .attr('width', 1)
+                .attr('height', 1)
+                .attr('xlink:href', slices[i].image);
+        }
+
         // Build arc
         var arc = d3.svg.arc()
-            .innerRadius(innerRadius)
+            .innerRadius(innerRadius * 0.75)
             .outerRadius(outerRadius)
             .startAngle(function (d, i) {
                 return sectorAngle * i;
             })
             .endAngle(function (d, i) {
-                return (sectorAngle * (i + 1)) - interval;
+                return sectorAngle * (i + 1) - interval;
             });
 
         // Create grouping element and move it to the center
@@ -120,53 +168,58 @@ jQuery(function ($) {
 
         // Add arc + label groups
         center.selectAll()
-            .data(data)
+            .data(slices)
             .enter()
             .append('g');
 
         // Add arcs
         center.selectAll('g')
             .append('path')
+            .attr('id', function (d, i) {
+                d.__id = 'slice-' + i;
+                d.__selected = false;
+                return 'slice-' + i;
+            })
             .attr('d', arc)
             .attr('class', 'sector-button')
-            .style('fill', function () {
-                return "hsl(" + Math.random() * 360 + ",100%,50%)";
-            });
+            .attr('fill', function (d, i) {
+                return (undefined !== d.image)
+                    ? 'url(#slice-' + i + ')'
+                    : 'hsl(' + Math.random() * 360 + ', 100%, 50%)';
+            })
+            .attr('fill-opacity', 0.5);
 
-        // Add labels
         center.selectAll('g')
             .append('text')
-            .attr('class', 'sector-text')
+            .attr('font-size', '10px')
             .attr('transform', function (d, i) {
-                var info = getLabelsXYAngle(i);
-                return 'rotate(' + info.angle + ',' + info.cx + ',' + info.cy + ')';
+                return "translate(" + (innerRadius * Math.cos(i * 2 * Math.PI / slices.length)) + "," + (innerRadius * Math.sin(i * 2 * Math.PI / slices.length)) + ")rotate(" + (i * 360 / slices.length) + ")";
             })
-            .attr('x', function (d, i) {
-                return getLabelsXYAngle(i).cx;
-            })
-            .attr('dy', function (d, i) {
-                return getLabelsXYAngle(i).cy;
-            })
-            .html(function (d) {
-                return d;
+            .text(function (d, i) {
+                if (undefined !== slices[i].label) {
+                    return slices[i].label;
+                }
             });
+
 
         // Add triangle to indicate current selection
         wheel.append('polygon')
             .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
             .attr('points', function () {
                 var width = innerRadius / 2;
-                var height = innerRadius * 1.2;
+                var height = innerRadius;
                 return -width / 2 + ',' + '0 0' + -height + ', ' + width / 2 + ',0';
             })
-            .style('fill', 'gray');
+            .style('fill', '#3a6700');
 
-        // Add OK button
-        wheel.append('circle')
-            .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
-            .attr('r', innerRadius * 0.7)
-            .style('fill', 'gray')
-            .attr('id', 'ok-button');
+        //// Add OK button
+        //wheel.append('circle')
+        //    .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
+        //    .attr('r', innerRadius)
+        //    //.attr('fill', 'url(#ok-button-image)')
+        //    .style('fill', 'gray')
+        //    ;
+        //
 
         // Add OK text
         wheel.append('text')
@@ -178,71 +231,82 @@ jQuery(function ($) {
                 return 'Ok';
             });
 
+        // OK button.
+        wheel.append('circle')
+            .attr('id', 'ok-button')
+            .attr('cx', width / 2)
+            .attr('cy', height / 2)
+            .attr('r', innerRadius)
+            .attr('fill', 'url(#ok-button-pattern)');
+
         // Utility function to create labels
         function getLabelsXYAngle(i) {
             var labelXYA = {};
 
             // Label rotation angle
-            var angle = (sectorAngle * i) + (Math.PI / data.length);
+            var angle = (sectorAngle * i) + (Math.PI / slices.length);
             labelXYA.angle = (angle * 360) / (Math.PI * 2);
 
             // Label coordinates
             var startAngle = Math.PI / 2;
-            var radius = (innerRadius + outerRadius) / 2
+            var radius = (innerRadius + outerRadius) / 2;
             labelXYA.cx = radius * Math.cos(-startAngle + (sectorAngle / 3) + (sectorAngle * i));
             labelXYA.cy = radius * Math.sin(-startAngle + (sectorAngle / 3) + (sectorAngle * i));
 
             return labelXYA;
         }
 
-        hammerize(selector, rotationStep, center, width, height, hookTap);
+        hammerize(selector, rotationStep, center, width, height, slices, wheel);
     }
 
-    /////////////////////////////////////////
-    // Execution starts here
+/////////////////////////////////////////
+// Execution starts here
     var jukebox = new szJukebox();
 
-
-    // Prepare forms
+// Prepare forms
     var date = new Date();
     date = jukebox.convertUnixDateToNormal(date.getTime());
     $('#date-from-input').val(date);
     $('#date-to-input').val(date);
-    // Add two days
+// Add two days
     jukebox.changeDay('#date-to-input', 2);
 
     $('#wheel-submit').prop('disabled', true);
 
-    // App logic variables
+// App logic variables
     var decidedFromDate = false;
     var decidedToDate = false;
     updateInputFieldFocus();
 
-    // Wheel data
-    var interests = ['Art & Culture', 'Attractions', 'Eat & Drink', 'Event', 'Family', 'Sport and Outdoor'];
-    var dates = [];
-    for (var i = 0; i < 20; i++) {
-        dates.push('');
+// Wheel data
+    var interests = saju_jukebox_wheel_options.interests;
+
+// Create an array of 4 weeks with the days labels.
+    var days = [];
+    for (var i = 0; i < 28; i++) {
+        var today = new Date();
+        var weekDay = new Date();
+        weekDay.setDate(today.getDate() + i);
+        days.push({label: WEEKDAYS[weekDay.getDay()]});
     }
-    var data = dates;
 
-    // Build wheel!
-    buildWheel('#wheel', true);
+// Build wheel!
+    buildWheel('#wheel--dates', days, $('#wheel-main').innerWidth());
+    buildWheel('#wheel--interests', interests, $('#wheel-main').innerWidth());
 
-    // Tab switching events
+// Tab switching events
     Hammer($('#select-interest-tab')[0]).on('tap', function () {
-        data = interests;
         decidedFromDate = true;
         decidedToDate = true;
         updateInputFieldFocus();
-        buildWheel('#wheel', false);
+        //buildWheel('#wheel', false, interests);
     });
+
     Hammer($('#select-date-tab')[0]).on('tap', function () {
-        data = dates;
         decidedFromDate = false;
         decidedToDate = false;
         updateInputFieldFocus();
-        buildWheel('#wheel', false);
+        //buildWheel('#wheel', false, days);
     });
 
     Hammer($('#date-from-input')[0]).on('tap', function () {
@@ -257,7 +321,7 @@ jQuery(function ($) {
         updateInputFieldFocus();
     });
 
-    // Final submission
+// Final submission
     Hammer($('#wheel-submit')[0]).on('tap', function () {
         var fromDate = $('#date-from-input').val();
         fromDate = [fromDate, jukebox.convertNormalDateToUnix(fromDate)];
@@ -268,16 +332,16 @@ jQuery(function ($) {
         // Build the redirect to link.
         var redirectTo = saju_jukebox_wheel_options.search_slug +
             ( -1 < saju_jukebox_wheel_options.search_slug.indexOf('?') ? '&' : '?') +
-            'from=' + encodeURIComponent( fromDate[0] ) +
-            '&to=' + encodeURIComponent( toDate[0] ) +
-            '&interests=' + encodeURIComponent( $('#interest-input').val() );
+            'from=' + encodeURIComponent(fromDate[0]) +
+            '&to=' + encodeURIComponent(toDate[0]) +
+            '&interests=' + encodeURIComponent($('#interest-input').val());
 
         // Redirect the user to the search page.
-        window.location.replace( redirectTo );
+        window.location.href = redirectTo;
 
     });
 
-    // Events fired by the wheel
+// Events fired by the wheel
     $(document).on('rotateAntiClockwise', function () {
         if (!decidedFromDate) {
             jukebox.changeDay('#date-from-input', -1);
@@ -286,6 +350,7 @@ jQuery(function ($) {
         }
         jukebox.syncFromToDates('#date-from-input', '#date-to-input', decidedFromDate);
     });
+
     $(document).on('rotateClockwise', function () {
         if (!decidedFromDate) {
             jukebox.changeDay('#date-from-input', 1);
@@ -295,7 +360,7 @@ jQuery(function ($) {
         jukebox.syncFromToDates('#date-from-input', '#date-to-input', decidedFromDate);
     });
 
-    // Main application logic events
+// Main application logic events
     $(document).on('centerWheelPress', function (e, value) {
 
         // console.log('centerWheelPress');
@@ -305,8 +370,7 @@ jQuery(function ($) {
         }
         else if (!decidedToDate) {
             decidedToDate = true;
-            data = interests;
-            buildWheel('#wheel', false);
+            //buildWheel('#wheel', false, interests);
             $('a[href="#select-interest"]').tab('show');
         } else {
 
@@ -315,8 +379,8 @@ jQuery(function ($) {
             var chosenInterests = ( '' !== inputValue ? inputValue.split(',') : [] );
 
             // Remove or add the interest.
-            var index = $.inArray(value, chosenInterests);
-            index > -1 ? chosenInterests.splice(index, 1) : chosenInterests.push(value);
+            var index = $.inArray(value.label, chosenInterests);
+            index > -1 ? chosenInterests.splice(index, 1) : chosenInterests.push(value.label);
 
             //var chosenInterests = $('#interest-input').val();
             //chosenInterests += value + ',';
@@ -345,4 +409,5 @@ jQuery(function ($) {
         }
     }
 
-});
+})
+;

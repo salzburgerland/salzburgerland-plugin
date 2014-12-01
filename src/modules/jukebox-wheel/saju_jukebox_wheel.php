@@ -29,9 +29,11 @@ function saju_shortcode_jukebox_wheel( $atts ) {
 	wp_enqueue_script( 'saju-jukebox-wheel-functions-js', plugins_url( 'js/jukebox-functions.js', __FILE__ ), array( 'bootstrap-js' ) );
 	wp_enqueue_script( 'saju-jukebox-wheel-js', plugins_url( 'js/jukebox.js', __FILE__ ), array( 'saju-jukebox-wheel-functions-js' ) );
 
+
 	// Print out the parameters.
 	wp_localize_script( 'saju-jukebox-wheel-js', 'saju_jukebox_wheel_options', array(
-		'search_slug' => $params['search_slug']
+		'search_slug' => $params['search_slug'],
+		'interests'   => unserialize( SAJU_JUKEBOX_CATEGORIES )
 	) );
 
 

@@ -37,3 +37,31 @@ define( 'SAJU_JUKEBOX_CATEGORIES_LABELS_TO_SLUGS', serialize( array(
 	'Family'            => 'family',
 	'Sport and Outdoor' => 'sport-and-outdoor',
 ) ) );
+
+// The following is used to pass data to build the wheel.
+define( 'SAJU_JUKEBOX_CATEGORIES', serialize( array(
+	array(
+		'label' => 'Art & Culture',
+		'image' => plugins_url( 'images/slice_1.jpg', __FILE__ )
+	),
+	array(
+		'label' => 'Attractions',
+		'image' => plugins_url( 'images/slice_2.jpg', __FILE__ )
+	),
+	array(
+		'label' => 'Eat & Drink',
+		'image' => plugins_url( 'images/slice_3.jpg', __FILE__ )
+	),
+	array(
+		'label' => 'Event',
+		'image' => plugins_url( 'images/slice_4.jpg', __FILE__ )
+	),
+	array(
+		'label' => 'Family',
+		'image' => plugins_url( 'images/slice_5.jpg', __FILE__ )
+	),
+	array(
+		'label' => 'Sport and Outdoor',
+		'image' => plugins_url( 'images/slice_6.jpg', __FILE__ )
+	),
+) ) );
