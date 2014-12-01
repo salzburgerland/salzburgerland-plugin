@@ -1,7 +1,12 @@
 var szJukebox = function () {
+
 };
 
 jQuery(function ($) {
+    
+    // Weekday and months names
+    szJukebox.prototype.WEEKDAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    szJukebox.prototype.MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
     /**
      * Returns in which quadrant of an elemnent there was an event (event is in absolute coordinates)
@@ -144,6 +149,27 @@ jQuery(function ($) {
         date = this.convertUnixDateToNormal(date);
         // console.log('4 : ' + date);
         $(selector).val(date);
+    };
+    
+    /**
+     * Beautify the date contained in $(hiddenSelector) and put it in $(visibleSelector).
+     *
+     * @since 1.0.0
+     *
+     * @param {string} hiddenSelector The hidden selector with the actual value.
+     * @param {string} visibleSelector The visible selector (will contain the cute-formatted date).
+     */
+    szJukebox.prototype.beautifyDate = function(hiddenSelector, visibleSelector) {
+        var hidden = $(hiddenSelector).val();
+        hidden = this.convertNormalDateToUnix(hidden);
+        hidden = new Date(hidden);
+        
+        var weekDay = this.WEEKDAYS_SHORT[ hidden.getDay() ];
+        var month = this.MONTHS[ hidden.getMonth() ];
+        hidden = weekDay + ' ' + hidden.getDate() + ' ' + month + ' ' + hidden.getFullYear();
+
+        $(visibleSelector).val( hidden );
+        
     };
 
     /**

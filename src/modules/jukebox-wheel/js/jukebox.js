@@ -14,9 +14,9 @@ jQuery(function ($) {
      * @param {number} height
      * @param {[]} slices The wheel slices.
      */
-    var hammerize = function (selector, rotationStep, center, width, height, slices, wheel) {
+    var hammerize = function (selector, initialRotation, rotationStep, center, width, height, slices, wheel) {
 
-        var rotation = 0;
+        var rotation = initialRotation;
 
         /**
          * Raise an event when the wheel has been tapped.
@@ -163,8 +163,8 @@ jQuery(function ($) {
             });
 
         // Create grouping element and move it to the center
-        var center = wheel.append('g')
-            .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+        var center = wheel.append('g');
+//            .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
 
         // Add arc + label groups
         center.selectAll()
@@ -201,6 +201,9 @@ jQuery(function ($) {
                 }
             });
 
+        // Rotate wheel so first sector is aligned with pointer
+        var initialRotation = -360/slices.length/2;
+        center.attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ') rotate(' + initialRotation + ')');
 
         // Add triangle to indicate current selection
         wheel.append('polygon')
@@ -211,15 +214,6 @@ jQuery(function ($) {
                 return -width / 2 + ',' + '0 0' + -height + ', ' + width / 2 + ',0';
             })
             .style('fill', '#3a6700');
-
-        //// Add OK button
-        //wheel.append('circle')
-        //    .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
-        //    .attr('r', innerRadius)
-        //    //.attr('fill', 'url(#ok-button-image)')
-        //    .style('fill', 'gray')
-        //    ;
-        //
 
         // Add OK text
         wheel.append('text')
@@ -256,7 +250,7 @@ jQuery(function ($) {
             return labelXYA;
         }
 
-        hammerize(selector, rotationStep, center, width, height, slices, wheel);
+        hammerize(selector, initialRotation, rotationStep, center, width, height, slices, wheel);
     }
 
 /////////////////////////////////////////
@@ -309,13 +303,13 @@ jQuery(function ($) {
         //buildWheel('#wheel', false, days);
     });
 
-    Hammer($('#date-from-input')[0]).on('tap', function () {
+    Hammer($('.arriving')[0]).on('tap', function () {
         decidedFromDate = false;
         decidedToDate = false;
         updateInputFieldFocus();
     });
 
-    Hammer($('#date-to-input')[0]).on('tap', function () {
+    Hammer($('.departing')[0]).on('tap', function () {
         decidedFromDate = true;
         decidedToDate = false;
         updateInputFieldFocus();
@@ -349,6 +343,8 @@ jQuery(function ($) {
             jukebox.changeDay('#date-to-input', -1);
         }
         jukebox.syncFromToDates('#date-from-input', '#date-to-input', decidedFromDate);
+        jukebox.beautifyDate('#date-from-input', '#date-from-input-nice');
+        jukebox.beautifyDate('#date-to-input', '#date-to-input-nice');
     });
 
     $(document).on('rotateClockwise', function () {
@@ -358,6 +354,8 @@ jQuery(function ($) {
             jukebox.changeDay('#date-to-input', 1);
         }
         jukebox.syncFromToDates('#date-from-input', '#date-to-input', decidedFromDate);
+        jukebox.beautifyDate('#date-from-input', '#date-from-input-nice');
+        jukebox.beautifyDate('#date-to-input', '#date-to-input-nice');
     });
 
 // Main application logic events
@@ -396,16 +394,16 @@ jQuery(function ($) {
     });
 
     function updateInputFieldFocus() {
-        $('#date-from-input').css('font-weight', 'normal');
-        $('#date-to-input').css('font-weight', 'normal');
-        $('#interest-input').css('font-weight', 'normal');
+        $('#date-from-input-nice').css('font-weight', 'normal');
+        $('#date-to-input-nice').css('font-weight', 'normal');
+        $('#interest-input-nice').css('font-weight', 'normal');
 
         if (!decidedFromDate) {
-            $('#date-from-input').css('font-weight', 'bold');
+            $('#date-from-input-nice').css('font-weight', 'bold');
         } else if (!decidedToDate) {
-            $('#date-to-input').css('font-weight', 'bold');
+            $('#date-to-input-nice').css('font-weight', 'bold');
         } else {
-            $('#interest-input').css('font-weight', 'bold');
+            $('#interest-input-nice').css('font-weight', 'bold');
         }
     }
 
