@@ -65,3 +65,5 @@ define( 'SAJU_JUKEBOX_CATEGORIES', serialize( array(
 		'image' => plugins_url( 'images/slice_6.jpg', __FILE__ )
 	),
 ) ) );
+
+define('SAJU_JUKEBOX_OK_BUTTON_IMAGE', plugins_url( 'images/ok_button.png', __FILE__ ) );

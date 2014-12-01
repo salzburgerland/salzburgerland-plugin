@@ -131,8 +131,8 @@ jQuery(function ($) {
             .append('image')
             .attr('width', innerRadius * 2)
             .attr('height', innerRadius * 2)
-            .attr('xlink:href', 'http://www.clker.com/cliparts/T/8/V/V/V/G/ok-button-hi.png');
-
+            .attr('xlink:href', saju_jukebox_wheel_options.ok_button);
+    
         // If the slices have an image, create their pattern here.
         for (var i = 0; i < slices.length; i++) {
             if (undefined === slices[i].image)
