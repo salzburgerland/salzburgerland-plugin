@@ -1,5 +1,5 @@
 <div ng-app="jukebox" ng-controller="SearchController">
 
-    <sl-event ng-repeat="event in events" value="event"></sl-event>
+    <sl-event ng-repeat="event in events" value="event" index="$index" events="events"></sl-event>
 
 </div>

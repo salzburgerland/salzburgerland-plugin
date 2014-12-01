@@ -22,7 +22,6 @@ function saju_shortcode_jukebox_wheel( $atts ) {
 	wp_enqueue_style( 'jukebox-wheel-css', plugins_url( 'css/style.css', __FILE__ ) );
 
 	// Queue scripts
-//	wp_enqueue_script( 'jquery', plugins_url( 'bower_components/jquery/dist/jquery.min.js', __FILE__ ) );
 	wp_enqueue_script( 'bootstrap-js', plugins_url( 'bower_components/bootstrap/dist/js/bootstrap.min.js', __FILE__ ), array( 'jquery' ) );
 	wp_enqueue_script( 'hammer', plugins_url( 'bower_components/hammerjs/hammer.min.js', __FILE__ ) );
 	wp_enqueue_script( 'd3', plugins_url( 'bower_components/d3/d3.min.js', __FILE__ ) );

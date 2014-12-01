@@ -16,13 +16,13 @@ angular.module('jukebox', [])
  *
  * @return The formatted date (and time) string.
  */
-    .filter('dateString', [ function () {
+    .filter('dateString', [function () {
         return function (input, dateFormat, timeFormat) {
 
             var date = moment(input);
 
             // Check if the time component is different from midnight.
-            if ( null === input.match( /.+T00:00:00\+\d{2}:\d{2}/i ) ) {
+            if (null === input.match(/.+T00:00:00\+\d{2}:\d{2}/i)) {
                 return date.tz('Europe/Vienna').format(dateFormat + timeFormat);
             }
 
@@ -150,8 +150,12 @@ angular.module('jukebox', [])
 
         return {
             restrict: 'E',
-            scope: {value: '='},
-            template: '<a ng-click="open(value)" --ng-href="{{getLink(value)}}" class="events__event" ng-style="getStyle(value)">' +
+            scope: {
+                value: '=',
+                index: '=',
+                events: '='
+            },
+            template: '<a ng-click="open(value)" ng-class="getClass(value)" ng-style="getStyle(value)">' +
             '<div class="events__event__label" ng-bind="value.label"></div>' +
             '<div class="events__event__dates" ng-bind="value.start | dateString:\'ddd D/MM/YYYY\':\' @ H:mm\'"></div>' +
             '</a>',
@@ -159,6 +163,7 @@ angular.module('jukebox', [])
 
                 // Get the link to the page view.
                 scope.getLink = function (item) {
+                    console.log(item);
                     var label = item.label.replace(/\W/g, '-');
                     var id = item.s.substr(datasetUrl.length);
                     return eventUrl
@@ -166,30 +171,68 @@ angular.module('jukebox', [])
                         .replace('{id}', id);
                 };
 
-                // Add the getStyle method to the scope.
-                scope.getStyle = function (item) {
-                    if (undefined !== item.images && 0 < item.images.length)
-                        return {'background-image': 'url("' + item.images[0].url + '")'};
+                scope.getClass = function (item) {
+                    return 'events__event ' + item.jukebox.substring(item.jukebox.lastIndexOf('/') + 1);
                 };
 
-                scope.open = function(item) {
+                // Add the getStyle method to the scope.
+                scope.getStyle = function (item) {
 
+                    //if (undefined === item.imageUrl || undefined === item.images || 0 === item.images.length || undefined === item.images[0].url)
+                    //    return;
+
+                    var url = 'https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&width=200&url=' +
+                        encodeURIComponent(item.imageUrl);
+
+                    return {'background-image': 'url("' + url + '")'};
+                };
+
+                scope.open = function (item) {
+
+                    // Get the link to the event.
                     var link = scope.getLink(item);
-                    var onclick = 'jQuery(\'body\').css(\'overflow\', \'auto\');jQuery(this).parent().remove();';
 
-                    $('body').css('overflow', 'hidden');
+                    // The close function.
+                    var closeFn = 'jQuery(\'body\').css(\'overflow\', \'auto\').scrollTop(' + jQuery('body').scrollTop()
+                        + '); jQuery(this).parent().remove();';
 
-                    var fullscreen = $('<div class="fullscreen"><div class="fullscreen__close" onclick="' + onclick + '"></div></div>')
-                        .css('position', 'absolute')
-                        .css('background', 'gray')
-                        .css('overflow', 'auto')
-                        .css('top', $('body').scrollTop() )
-                        .width( $('body').innerWidth() )
-                        .height( $('body').innerHeight() )
+                    // Lock the body.
+                    jQuery('body')
+                        .scrollTop(0)
+                        .css('overflow', 'hidden');
+
+                    // Create the overlay DIV.
+                    var fullscreen = jQuery('<div class="fullscreen"><div class="fullscreen__close" onclick="' + closeFn + '"></div></div>')
                         .appendTo('body');
 
-                    var inner = $('<div></div>').appendTo(fullscreen)
+                    // Load the remote data.
+                    var inner = jQuery('<div>Loading...</div>').appendTo(fullscreen)
                         .load(link);
+
+
+                    // Get the current index.
+                    var index = scope.index;
+
+                    // Handle the swipes.
+                    var hammer = new Hammer(inner[0]);
+                    hammer.get('swipe').set({
+                        direction: Hammer.DIRECTION_HORIZONTAL,
+                        velocity: 0.3
+                    });
+                    hammer.on('swipe', function (ev) {
+
+                        // Previous.
+                        if (ev.direction === Hammer.DIRECTION_RIGHT) {
+                            index = ( 0 === index ? scope.events.length - 1 : index - 1 );
+                        }
+
+                        // Next.
+                        if (ev.direction === Hammer.DIRECTION_LEFT) {
+                            index = ( ( scope.events.length - 1 ) === index ? 0 : index + 1 );
+                        }
+
+                        inner.html('Loading...').load(scope.getLink(scope.events[index]));
+                    });
 
 
                 };
@@ -213,24 +256,11 @@ angular.module('jukebox', [])
         $scope.events = [];
 
         var offset = 0;
-        var limit = 10;
+        var limit = 20;
 
         var load = function (from, to, offset, limit) {
             EventsService.listByJukebox(from, to, $scope.interests.join(','), offset, limit)
                 .success(function (data, status, headers, config) {
-                    // Update the list of Holiday Themes.
-
-                    angular.forEach(data, function (value, key) {
-                        EventsService.getImages(value.s)
-                            .success(function (data, status, headers, config) {
-                                value.images = data;
-                            });
-
-                        EventsService.getSubjects(value.s)
-                            .success(function (data, status, headers, config) {
-                                value.subjects = data;
-                            });
-                    });
 
                     $scope.events = $scope.events.concat(data);
 

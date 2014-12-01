@@ -146,6 +146,7 @@ function saju_jukebox_enqueue_scripts() {
 
 	wp_enqueue_style( 'saju-css', plugins_url( 'css/jukebox.css', __FILE__ ) );
 
+	wp_enqueue_script( 'hammer', plugins_url( 'jukebox-wheel/bower_components/hammerjs/hammer.min.js', dirname( __FILE__ ) ), array(), '2.0.4' );
 	wp_enqueue_script( 'moment-js', plugins_url( 'js/moment.min.js', __FILE__ ), array(), '2.8.4' );
 	wp_enqueue_script( 'moment-timezone-width-data-js', plugins_url( 'js/moment-timezone-with-data-2010-2020.min.js', __FILE__ ), array( 'moment-js' ), '0.2.5' );
 	wp_enqueue_script( 'angular-js', '//ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js', array(), '1.2.26' );

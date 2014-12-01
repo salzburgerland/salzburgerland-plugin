@@ -8,6 +8,10 @@ a {
     cursor: pointer
 }
 
+html #wpadminbar {
+    display: none !important;
+}
+
 #recap {
     clear: both;
 }
@@ -169,14 +173,24 @@ input#submit {
     padding-left: 10px;
 }
 
+.fullscreen {
+    position: fixed;
+    overflow: auto;
+    background: gray;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
 .fullscreen__close {
     position: absolute;
     display: block;
     cursor: pointer;
     top: 0;
     right: 10px;
-    width: 20px;
-    height: 20px;
+    width: 30px;
+    height: 30px;
     background: violet;
     z-index: 1000;
 }
