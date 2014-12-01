@@ -41,28 +41,34 @@ define( 'SAJU_JUKEBOX_CATEGORIES_LABELS_TO_SLUGS', serialize( array(
 // The following is used to pass data to build the wheel.
 define( 'SAJU_JUKEBOX_CATEGORIES', serialize( array(
 	array(
-		'label' => 'Art & Culture',
-		'image' => plugins_url( 'images/slice_1.jpg', __FILE__ )
+		'label' => '',
+		'value' => 'Eat & Drink',
+		'image' => plugins_url( 'images/eat_drink.jpg', __FILE__ )
 	),
 	array(
-		'label' => 'Attractions',
-		'image' => plugins_url( 'images/slice_2.jpg', __FILE__ )
+		'label' => '',
+		'value' => 'Event',
+		'image' => plugins_url( 'images/event.jpg', __FILE__ )
 	),
 	array(
-		'label' => 'Eat & Drink',
-		'image' => plugins_url( 'images/slice_3.jpg', __FILE__ )
+		'label' => '',
+		'value' => 'Family',
+		'image' => plugins_url( 'images/family.jpg', __FILE__ )
 	),
 	array(
-		'label' => 'Event',
-		'image' => plugins_url( 'images/slice_4.jpg', __FILE__ )
+		'label' => '',
+		'value' => 'Sport and Outdoor',
+		'image' => plugins_url( 'images/sport_outdoor.jpg', __FILE__ )
 	),
 	array(
-		'label' => 'Family',
-		'image' => plugins_url( 'images/slice_5.jpg', __FILE__ )
+		'label' => '',
+		'value' => 'Art & Culture',
+		'image' => plugins_url( 'images/art_culture.jpg', __FILE__ ),
 	),
 	array(
-		'label' => 'Sport and Outdoor',
-		'image' => plugins_url( 'images/slice_6.jpg', __FILE__ )
+		'label' => '',
+		'value' => 'Attractions',
+		'image' => plugins_url( 'images/attractions.jpg', __FILE__ )
 	),
 ) ) );
 

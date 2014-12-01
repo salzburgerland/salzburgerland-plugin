@@ -219,7 +219,12 @@ angular.module('jukebox', [])
                         direction: Hammer.DIRECTION_HORIZONTAL,
                         velocity: 0.3
                     });
-                    hammer.on('swipe', function (ev) {
+                    hammer.on('pan', function (ev) {
+                        ev.preventDefault();
+
+                        // Not enough distance.
+                        if ((inner.width() / 2) > ev.distance)
+                            return;
 
                         // Previous.
                         if (ev.direction === Hammer.DIRECTION_RIGHT) {
@@ -232,6 +237,10 @@ angular.module('jukebox', [])
                         }
 
                         inner.html('Loading...').load(scope.getLink(scope.events[index]));
+
+                    });
+                    hammer.on('swipe', function (ev) {
+
                     });
 
 

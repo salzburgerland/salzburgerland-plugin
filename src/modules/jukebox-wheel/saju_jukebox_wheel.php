@@ -33,7 +33,7 @@ function saju_shortcode_jukebox_wheel( $atts ) {
 	wp_localize_script( 'saju-jukebox-wheel-js', 'saju_jukebox_wheel_options', array(
 		'search_slug' => $params['search_slug'],
 		'interests'   => unserialize( SAJU_JUKEBOX_CATEGORIES ),
-                'ok_button'   => SAJU_JUKEBOX_OK_BUTTON_IMAGE
+		'ok_button'   => SAJU_JUKEBOX_OK_BUTTON_IMAGE
 	) );
 
 

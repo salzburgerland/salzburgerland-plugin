@@ -1,7 +1,5 @@
 jQuery(function ($) {
 
-    var WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
     /**
      * Hammerize the element with the specified selector.
      *
@@ -53,7 +51,7 @@ jQuery(function ($) {
             }
 
             // Reverse the selection and set the opacity.
-            value.__selected = ! value.__selected;
+            value.__selected = !value.__selected;
             wheel.selectAll('#' + value.__id).attr('fill-opacity', value.__selected ? 1.0 : 0.5);
 
             // Finally call the update input.
@@ -132,7 +130,7 @@ jQuery(function ($) {
             .attr('width', innerRadius * 2)
             .attr('height', innerRadius * 2)
             .attr('xlink:href', saju_jukebox_wheel_options.ok_button);
-    
+
         // If the slices have an image, create their pattern here.
         for (var i = 0; i < slices.length; i++) {
             if (undefined === slices[i].image)
@@ -202,7 +200,7 @@ jQuery(function ($) {
             });
 
         // Rotate wheel so first sector is aligned with pointer
-        var initialRotation = -360/slices.length/2;
+        var initialRotation = -360 / slices.length / 2;
         center.attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ') rotate(' + initialRotation + ')');
 
         // Add triangle to indicate current selection
@@ -264,6 +262,8 @@ jQuery(function ($) {
     $('#date-to-input').val(date);
 // Add two days
     jukebox.changeDay('#date-to-input', 2);
+    jukebox.beautifyDate('#date-from-input', '#date-from-input-nice');
+    jukebox.beautifyDate('#date-to-input', '#date-to-input-nice');
 
     $('#wheel-submit').prop('disabled', true);
 
@@ -281,7 +281,7 @@ jQuery(function ($) {
         var today = new Date();
         var weekDay = new Date();
         weekDay.setDate(today.getDate() + i);
-        days.push({label: WEEKDAYS[weekDay.getDay()]});
+        days.push({label: ''});
     }
 
 // Build wheel!
@@ -361,8 +361,6 @@ jQuery(function ($) {
 // Main application logic events
     $(document).on('centerWheelPress', function (e, value) {
 
-        // console.log('centerWheelPress');
-
         if (!decidedFromDate) {
             decidedFromDate = true;
         }
@@ -377,18 +375,14 @@ jQuery(function ($) {
             var chosenInterests = ( '' !== inputValue ? inputValue.split(',') : [] );
 
             // Remove or add the interest.
-            var index = $.inArray(value.label, chosenInterests);
-            index > -1 ? chosenInterests.splice(index, 1) : chosenInterests.push(value.label);
+            var index = $.inArray(value.value, chosenInterests);
+            index > -1 ? chosenInterests.splice(index, 1) : chosenInterests.push(value.value);
 
-            //var chosenInterests = $('#interest-input').val();
-            //chosenInterests += value + ',';
-            //chosenInterests = jukebox.deleteDuplicates(chosenInterests.split(','));
-            //chosenInterests = chosenInterests.join(',');
             $('#interest-input').val(chosenInterests.join(','));
 
             // Activate submission
             $('#wheel-submit').prop('disabled', false);
-            $('#wheel-submit').text('SUBMIT');
+
         }
         updateInputFieldFocus();
     });
