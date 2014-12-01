@@ -35,11 +35,13 @@
 			<div class="current-choice">
 				<div class="arriving selector__dates__date selector__dates__date--arriving">
 					<label>Arriving:</label>
-					<input id="date-from-input" name="date-from" readonly/>
+					<input id="date-from-input-nice" readonly />
+                                        <input id="date-from-input" name="date-from" type="hidden" />
 				</div>
 				<div class="departing selector__dates__date selector__dates__date--departing">
 					<label>Departing:</label>
-					<input id="date-to-input" name="date-to" readonly/>
+					<input id="date-to-input-nice" readonly />
+                                        <input id="date-to-input" name="date-to" type="hidden" />
 				</div>
 			</div>
 
